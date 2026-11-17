@@ -1,0 +1,35 @@
+{
+  "name": "maple-ridge-business-hub",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "db:prepare": "node --import tsx scripts/prepare.ts",
+    "owner:create": "node --import tsx scripts/create-owner.ts",
+    "lead:import": "node --import tsx scripts/import-lead.ts"
+  },
+  "dependencies": {
+    "next": "16.4.6",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "better-auth": "1.7.25",
+    "better-sqlite3": "^12.4.1",
+    "pg": "^8.16.3",
+    "zod": "^4.1.12",
+    "lucide-react": "^0.553.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "tsx": "^4.20.6",
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/pg": "^8.15.6"
+  }
+}

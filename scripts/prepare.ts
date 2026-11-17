@@ -1,0 +1,12 @@
+import nextEnv from "@next/env";
+const { loadEnvConfig } = nextEnv;
+loadEnvConfig(process.cwd());
+const { createAuth } = await import("../src/lib/auth");
+const { migrateApp, closeDatabase } = await import("../src/lib/db");
+const { getMigrations } = await import("better-auth/db/migration");
+const auth = createAuth();
+const { runMigrations } = await getMigrations(auth.options);
+await runMigrations();
+await migrateApp();
+await closeDatabase();
+console.log("Authentication and private job tables are ready.");

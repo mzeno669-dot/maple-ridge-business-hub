@@ -1,0 +1,12 @@
+node_modules/
+.next/
+.env*
+!.env.example
+.private/
+*.db
+*.db-shm
+*.db-wal
+.vercel/
+*.tsbuildinfo
+test-results/
+.openai/
