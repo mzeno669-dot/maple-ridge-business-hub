@@ -2432,3 +2432,12 @@ td small {
     font-size: 12px;
   }
 }
+
+.books { display: grid; gap: 1rem; }
+.books-filters, .books-summary { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; }
+.books label { display: grid; gap: .35rem; min-width: 0; }
+.books select, .books input { max-width: 100%; padding: .55rem; }
+.books details, .books-summary { border: 1px solid #d8dfda; border-radius: .75rem; padding: 1rem; background: white; }
+.books-summary { justify-content: space-between; margin: 0; }
+.books-summary dd { font-size: 1.4rem; font-weight: 700; margin: .35rem 0 0; }
+.books summary { cursor: pointer; }
