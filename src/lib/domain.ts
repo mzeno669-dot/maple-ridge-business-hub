@@ -29,8 +29,15 @@ const date = z
       new Date(v).toISOString().slice(0, 10) === v,
   );
 const id = z.string().min(1).max(100);
+export const businessNames = ["Maple Ridge Home & Property Solutions LLC", "Maple Ridge Handyman Services"] as const;
+const bookFields = {
+  business: z.enum(businessNames).optional(),
+  bankReference: z.string().trim().max(120).optional(),
+};
 export const costSchema = z.object({
   id,
+  ...bookFields,
+  paidOn: date.optional(),
   category: z.enum(categories),
   description: text,
   estimatedQty: z.number().min(0).max(100000).nullable(),
@@ -93,6 +100,7 @@ export const jobSchema = z
         z.object({
           id,
           date,
+          ...bookFields,
           amount: z.number().int().positive().max(1000000000),
           kind: z.enum(["Deposit", "Progress", "Final"]),
           method: text,
