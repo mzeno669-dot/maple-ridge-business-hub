@@ -51,7 +51,9 @@ import {
   lineTotal,
 } from "@/lib/domain";
 
-type View = "Overview" | "Jobs" | "Calendar" | "Drafts" | "Costs";
+import Books from "./books";
+
+type View = "Overview" | "Jobs" | "Calendar" | "Drafts" | "Costs" | "Books & taxes";
 type Tab =
   | "Overview"
   | "Details"
@@ -64,6 +66,7 @@ const nav = [
   { label: "Jobs" as const, Icon: BriefcaseBusiness },
   { label: "Calendar" as const, Icon: CalendarDays },
   { label: "Drafts" as const, Icon: Files },
+  { label: "Books & taxes" as const, Icon: Wallet },
   { label: "Costs" as const, Icon: ChartNoAxesCombined },
 ];
 const today = () =>
@@ -791,7 +794,7 @@ export default function Hub({
                           ? "Make room for good work."
                           : view === "Drafts"
                             ? "Ready for your review."
-                            : "Know where each job stands."}
+                            : view === "Books & taxes" ? "Books & taxes" : "Know where each job stands."}
                   </h1>
                   <p>
                     {view === "Overview"
@@ -802,7 +805,7 @@ export default function Hub({
                           ? "Site visits, work days, and follow-ups. All times are Eastern."
                           : view === "Drafts"
                             ? "Your estimates, invoices, change orders, and customer messages."
-                            : "Compare planned costs with the work and expenses recorded."}
+                            : view === "Books & taxes" ? "Review job receipts and paid expenses by business and year." : "Compare planned costs with the work and expenses recorded."}
                   </p>
                 </div>
                 <button className="primary" onClick={() => setCreating(true)}>
@@ -1189,6 +1192,7 @@ export default function Hub({
                   )}
                 </section>
               )}
+              {view === "Books & taxes" && <Books jobs={jobs} save={save} busy={busy} openCosts={(j) => { open(j); setTab("Costs & payments"); }} />}
               {view === "Costs" && (
                 <section className="panel">
                   <div className="panel-heading">
@@ -2023,6 +2027,7 @@ function Costs({ job, patch }: { job: Job; patch: (v: Partial<Job>) => void }) {
               const f = new FormData(e.currentTarget);
               const c: Cost = {
                 ...cost,
+                paidOn: String(f.get("paidOn") || "") || undefined,
                 category: String(f.get("category")) as Cost["category"],
                 description: String(f.get("description")),
                 unit: String(f.get("unit")),
@@ -2088,6 +2093,9 @@ function Costs({ job, patch }: { job: Job; patch: (v: Partial<Job>) => void }) {
                   step="0.01"
                   defaultValue={dollars(cost.estimatedRate)}
                 />
+              </Field>
+              <Field label="Date paid (for books)">
+                <input type="date" name="paidOn" defaultValue={cost.paidOn ?? ""} />
               </Field>
               <Field label="Actual quantity">
                 <input
