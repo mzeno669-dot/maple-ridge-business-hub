@@ -1,4 +1,5 @@
 "use client";
+import { InvoiceTotals } from "./invoice-totals";
 import { useEffect, useRef, useState } from "react";
 import {
   TreePine,
@@ -295,10 +296,11 @@ export default function Hub({
   }
   const patch = (update: Partial<Job>) =>
     setJob((j) => (j ? { ...j, ...update } : j));
+  const savedDocumentJob = document ? jobs.find((j) => j.id === document.jobId) : undefined;
   const selectedDoc = document
     ? (job?.id === document.jobId
         ? job
-        : jobs.find((j) => j.id === document.jobId)
+        : savedDocumentJob
       )?.documents.find((d) => d.id === document.id)
     : null;
   async function makeDoc(kind: DraftDocument["kind"]) {
@@ -1358,9 +1360,10 @@ export default function Hub({
           </form>
         </Modal>
       )}
-      {document && selectedDoc && (
+      {document && selectedDoc && savedDocumentJob && (
         <DocumentModal
           doc={selectedDoc}
+          payments={savedDocumentJob.payments}
           onClose={() => setDocument(null)}
           busy={busy}
           onSave={async (changes) => {
@@ -2554,11 +2557,13 @@ function Calendar({
 
 function DocumentModal({
   doc,
+  payments,
   onClose,
   onSave,
   busy,
 }: {
   doc: DraftDocument;
+  payments: Job["payments"];
   onClose: () => void;
   onSave: (d: Partial<DraftDocument>) => Promise<boolean>;
   busy: boolean;
@@ -2679,7 +2684,9 @@ function DocumentModal({
             <p>{doc.location || "Property address to be confirmed"}</p>
           </div>
           <div className="document-body">{body}</div>
-          {doc.kind !== "Customer message" && (
+          {doc.kind === "Invoice" ? (
+            <InvoiceTotals total={total === "" ? null : Math.round(Number(total) * 100)} payments={payments} />
+          ) : doc.kind !== "Customer message" && (
             <div className="document-total">
               <span>Draft proposed total</span>
               <strong>
