@@ -1,7 +1,7 @@
-import { type Job, lineTotal } from "./domain";
+import { type Job, type Overhead, lineTotal } from "./domain";
 
 export type BookEntry = {
-  job: Job;
+  job?: Job;
   id: string;
   type: "Receipt" | "Expense";
   date: string;
@@ -12,8 +12,8 @@ export type BookEntry = {
   bankReference?: string;
 };
 
-export function jobBooks(jobs: Job[]) {
-  const entries: BookEntry[] = [];
+export function jobBooks(jobs: Job[], overhead: Overhead[] = []) {
+  const entries: BookEntry[] = overhead.map(expense => ({ ...expense, type: "Expense" }));
   const review: { job: Job; description: string }[] = [];
   for (const job of jobs) {
     for (const payment of job.payments) {
@@ -47,6 +47,6 @@ export function booksCsv(entries: BookEntry[]) {
     const safe = /^[\s]*[=+@-]|^[\t\r\n]/.test(value) ? "'" + value : value;
     return '"' + safe.replaceAll('"', '""') + '"';
   }
-  const rows = entries.map(e => [e.date, e.business || "Unassigned", e.job.title, e.job.customer, e.type, e.category, e.description, (e.amount / 100).toFixed(2), e.bankReference || ""]);
+  const rows = entries.map(e => [e.date, e.business || "Unassigned", e.job?.title || "", e.job?.customer || "", e.type, e.category, e.description, (e.amount / 100).toFixed(2), e.bankReference || ""]);
   return [["Date","Business","Job","Customer","Type","Category","Description","Amount USD","Statement reference"], ...rows].map(row => row.map(cell).join(",")).join("\r\n");
 }

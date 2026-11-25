@@ -30,6 +30,22 @@ const date = z
   );
 const id = z.string().min(1).max(100);
 export const businessNames = ["Maple Ridge Home & Property Solutions LLC", "Maple Ridge Handyman Services"] as const;
+export const overheadCategories = [
+  "Advertising", "Insurance", "Office & software", "Professional fees",
+  "Tools & equipment", "Vehicle & fuel", "Other overhead",
+] as const;
+
+export const overheadSchema = z.object({
+  id: z.uuid(),
+  business: z.enum(businessNames),
+  date,
+  category: z.enum(overheadCategories),
+  description: z.string().trim().min(1).max(300),
+  amount: z.number().int().positive().max(1000000000),
+  bankReference: z.string().trim().max(120),
+});
+export type Overhead = z.infer<typeof overheadSchema>;
+
 const bookFields = {
   business: z.enum(businessNames).optional(),
   bankReference: z.string().trim().max(120).optional(),
