@@ -213,15 +213,36 @@ export const formatMoney = (cents: number | null) =>
         style: "currency",
         currency: "USD",
       }).format(cents / 100);
+function followUpPrompts(job: Job) {
+  if (job.windowType.trim() || job.windowMin || job.windowMax ||
+      /\bwindow replacements?\b|\breplacement windows?\b|\bwindow installations?\b|\b(?:replace|install) (?:[0-9]+ |the |new )*windows?\b/i.test(job.title)) {
+    return {
+      question: "Could you send photos of the windows, their approximate sizes, how many need replacing, and which floor they are on?",
+      measurement: "Measure each opening before pricing.",
+      supply: "Confirm window type and who supplies the windows.",
+    };
+  }
+  if (/\bdecks?\b|\bdecking\b/i.test(job.title)) {
+    return {
+      question: "Could you send a photo of the whole deck, a close-up of the work area, and its approximate dimensions?",
+      measurement: "Measure the deck area included in the work before pricing.",
+    };
+  }
+  return {
+    question: "Could you send a few photos of the work area and describe what you would like done?",
+    measurement: "Confirm any measurements needed for this job before pricing.",
+  };
+}
+
 export function missedCosts(job: Job) {
+  const prompts = followUpPrompts(job);
   const warnings: string[] = [];
   if (!job.address) warnings.push("Confirm the full property address.");
   if (!job.phone && !job.email)
     warnings.push("Add a phone number or email for follow-up.");
-  if (!job.windowType)
-    warnings.push("Confirm window type and who supplies the windows.");
+  if (prompts.supply && !job.windowType.trim()) warnings.push(prompts.supply);
   if (!job.measurements.length)
-    warnings.push("Measure each opening before pricing.");
+    warnings.push(prompts.measurement);
   if (!job.access)
     warnings.push("Confirm floor, access, and any lift or staging needs.");
   for (const c of categories.filter((c) => c !== "Other"))
@@ -253,8 +274,13 @@ export function createDraft(
     .filter(Boolean)
     .join(", ");
   let body = job.scope || "Scope to be confirmed after a site visit.";
-  if (kind === "Customer message")
-    body = `Hi ${job.customer}, thanks for reaching out to Maple Ridge Home & Property Solutions LLC. I can take a look at your window project${job.city ? ` in ${job.city}` : ""}. Could you send the property address, a few photos, approximate window sizes, the number you want replaced, and which floor they are on? Please also let me know whether you already have the windows and a good time to reach you. Once I have those details, we can arrange a visit and prepare an estimate. Thank you, Michael`;
+  if (kind === "Customer message") {
+    const prompts = followUpPrompts(job);
+    const subject = job.title.trim() || "your project";
+    const addressRequest = job.address.trim() ? "" : " Please include the property address.";
+    const supplyRequest = prompts.supply && !job.windowType.trim() ? " Do you already have the windows?" : "";
+    body = `Hi ${job.customer}, thanks for contacting Maple Ridge Home & Property Solutions LLC about ${subject}. ${prompts.question}${addressRequest}${supplyRequest} What would be a good time to reach you? Thank you, Michael`;
+  }
   if (kind === "Change order")
     body =
       "Describe the requested scope change, reason, added or reduced price, and schedule impact. Owner review and customer agreement are pending.";

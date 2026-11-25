@@ -115,7 +115,31 @@ test("rejects nonfinite money, negative payments, invalid dates, and inverted co
 test("cost checks preserve unconfirmed contact, measurements, access, and prices", () => {
   const warnings = missedCosts(newJob("Test customer"));
   assert.ok(warnings.some((x) => x.includes("address")));
-  assert.ok(warnings.some((x) => x.includes("opening")));
+  assert.ok(warnings.some((x) => x.includes("measurements")));
   assert.ok(warnings.some((x) => x.includes("helper labor")));
   assert.ok(warnings.some((x) => x.includes("customer price")));
+});
+
+test("deck and general leads get relevant draft messages and pricing reminders", () => {
+  for (const [title, expected] of [
+    ["Deck repair", /deck area/i],
+    ["Front door refinishing", /measurements needed/i],
+  ] as const) {
+    const job = { ...newJob("Sample customer"), title };
+    const draft = createDraft(job, "Customer message");
+    assert.equal(draft.status, "draft");
+    assert.ok(draft.body.includes(title));
+    assert.match(missedCosts(job).join(" "), expected);
+    assert.doesNotMatch([draft.body, ...missedCosts(job)].join(" "), /window|each opening/i);
+  }
+});
+
+test("replacement leads and existing window records retain window questions", () => {
+  for (const job of [
+    { ...newJob("Sample customer"), title: "Window replacement" },
+    { ...newJob("Sample customer"), windowMin: 3 },
+  ]) {
+    assert.match(createDraft(job, "Customer message").body, /approximate sizes/);
+    assert.ok(missedCosts(job).includes("Measure each opening before pricing."));
+  }
 });
